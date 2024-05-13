@@ -129,7 +129,7 @@ export default function Home() {
         </div>
         <div className="flex items-center gap-2">
           <button
-            className="btn"
+            className="btn btn-primary"
             disabled={!image || loading}
             onClick={() => {
               handleDownload(false);
