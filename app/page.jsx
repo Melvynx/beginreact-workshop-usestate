@@ -11,7 +11,7 @@ export default function Home() {
     shadow: 10,
     radius: 16,
   });
-  const [isLoading, setIsLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const setSetting = (key, value) => {
     setSettings({
@@ -40,7 +40,27 @@ export default function Home() {
     reader.readAsDataURL(file);
   };
 
-  console.log(settings);
+  const handleDownload = async (isCopy) => {
+    setLoading(isCopy ? "copying" : "downloading");
+    const { blob } = await renderPNG({
+      image,
+      settings,
+    });
+    const url = URL.createObjectURL(blob);
+
+    if (isCopy) {
+      await navigator.clipboard.write([
+        new ClipboardItem({ "image/png": blob }),
+      ]);
+    } else {
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${image.name}.png`;
+      a.click();
+    }
+
+    setLoading(false);
+  };
 
   return (
     <div className="w-full flex justify-center max-w-4xl px-4 py-8 max-lg:flex-col m-auto gap-8 lg:gap-16 min-h-full text-black">
@@ -107,30 +127,33 @@ export default function Home() {
         <div className="w-full h-fit border rounded-md">
           <ImageGenerator settings={settings} image={image} />
         </div>
-        <button
-          className="btn"
-          disabled={!image || isLoading}
-          onClick={async () => {
-            setIsLoading(true);
-            const { blob } = await renderPNG({
-              image,
-              settings,
-            });
-            const url = URL.createObjectURL(blob);
+        <div className="flex items-center gap-2">
+          <button
+            className="btn"
+            disabled={!image || loading}
+            onClick={() => {
+              handleDownload(false);
+            }}
+          >
+            Download{" "}
+            {loading === "downloading" ? (
+              <span class="loading loading-spinner loading-sm"></span>
+            ) : null}
+          </button>
 
-            const a = document.createElement("a");
-            a.href = url;
-            a.download = `${image.name}.png`;
-            a.click();
-
-            setIsLoading(false);
-          }}
-        >
-          Download{" "}
-          {isLoading ? (
-            <span class="loading loading-spinner loading-sm"></span>
-          ) : null}
-        </button>
+          <button
+            className="btn"
+            disabled={!image || loading}
+            onClick={() => {
+              handleDownload(true);
+            }}
+          >
+            Copy{" "}
+            {loading === "copying" ? (
+              <span class="loading loading-spinner loading-sm"></span>
+            ) : null}
+          </button>
+        </div>
       </div>
     </div>
   );
