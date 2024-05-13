@@ -1,2 +1,1 @@
 BeginReact project
-x
